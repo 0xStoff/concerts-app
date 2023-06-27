@@ -3,12 +3,33 @@ import {Image} from "expo-image";
 import React from "react";
 import {BASE_SIZE, screenWidth} from "../utils/constants";
 import {assetLocation} from "../utils/data";
+import {useNavigation} from "@react-navigation/native";
+import {toLocaleString} from "../utils/utils";
 
-export function WideCard({asset, title, location, city, time,}) {
+export function WideCard({asset, title, location, city, time}) {
+    const navigation = useNavigation();
+
+// Get the current date without the time
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    // Get the next day's date without the time
+    const tomorrowDate = new Date();
+    tomorrowDate.setDate(currentDate.getDate() + 1);
+    tomorrowDate.setHours(0, 0, 0, 0);
+
+
+// Compare the event date with the current date
+    const isPastEvent = time < currentDate;
+    const isTodayEvent = time.toDateString() === currentDate.toDateString();
+    const isUpcomingEvent = time >= tomorrowDate;
+
+    if (!isPastEvent) return null
+
     return (
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity  onPress={() => navigation.navigate('Details', {asset, title, location, city, time})} style={styles.card}>
             <View style={styles.textContainer}>
-                <Text style={styles.caption}>{time}</Text>
+                <Text style={styles.caption}>{toLocaleString(time)}</Text>
                 <Text style={styles.title}>{title}</Text>
                 <Text style={styles.subTitle}>{location}</Text>
                 <Text style={styles.caption}>{city}</Text>

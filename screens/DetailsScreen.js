@@ -1,34 +1,29 @@
-import {StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {classifyEventByDate, toLocaleString} from "../utils/utils";
+import Screen from "../components/Screen";
 import {Image} from "expo-image";
+import {assetLocation} from "../utils/data";
+import {StyleSheet, Text, View} from "react-native";
 import React from "react";
 import {BASE_SIZE, screenWidth} from "../utils/constants";
-import {assetLocation} from "../utils/data";
-import {useNavigation} from "@react-navigation/native";
-import {classifyEventByDate, toLocaleString} from "../utils/utils";
 
-
-export function Card({asset, title, location, city, time, liveToday = false}) {
-    const navigation = useNavigation();
+export function DetailsScreen({route: {params: {asset, title, location, city, time}}}) {
 
     const {isPastEvent, isTodayEvent, isUpcomingEvent} = classifyEventByDate(time)
 
-    if (isPastEvent) return null
-
     return (
-        <TouchableOpacity
-            onPress={() => navigation.navigate('Details', {asset, title, location, city, time, liveToday})}
-            style={styles.card}>
+        <Screen>
             <Image
-                style={styles.image}
+                style={{flex: 0.65}}
                 source={{uri: `${assetLocation}/${asset}`}}
                 loading='eager'
                 transition={500}
             />
-            <View style={styles.textContainer}>
+            <View style={{padding: 20}}>
                 <View style={styles.captionContainer}>
                     <Text style={styles.caption}>{toLocaleString(time)}</Text>
                     <View style={styles.badge}>
                         {isTodayEvent && <Text style={[styles.badgeText, {color: '#4D0EFF'}]}>Live Now</Text>}
+                        {isPastEvent && <Text style={[styles.badgeText, {color: 'red'}]}>Archived</Text>}
                         {isUpcomingEvent && <Text style={[styles.badgeText, {color: '#0A84FF'}]}>Upcoming</Text>}
                     </View>
                 </View>
@@ -36,8 +31,8 @@ export function Card({asset, title, location, city, time, liveToday = false}) {
                 <Text style={styles.subTitle}>{location}</Text>
                 <Text style={styles.caption}>{city}</Text>
             </View>
-        </TouchableOpacity>
-    )
+        </Screen>
+    );
 }
 
 const flexBox = {
