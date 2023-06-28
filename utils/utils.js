@@ -9,8 +9,7 @@ export function classifyEventByDate(time) {
     tomorrowDate.setHours(0, 0, 0, 0);
 
     // Compare the event date with the current date
-    const eventDate = new Date(time); // assuming time is a valid date-time string
-
+    const eventDate = new Date(time);
     const isPastEvent = eventDate.setHours(0, 0, 0, 0) < currentDate.getTime();
     const isTodayEvent = eventDate.toDateString() === currentDate.toDateString();
     const isUpcomingEvent = eventDate.setHours(0, 0, 0, 0) >= tomorrowDate.getTime();
@@ -18,12 +17,18 @@ export function classifyEventByDate(time) {
     return {isPastEvent, isTodayEvent, isUpcomingEvent}
 }
 
-export const toLocaleString = (string) => string.toLocaleString('ch-DE', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-    hour12: false,
-})
+export const toLocaleString = (dateObj, includeTime = true) => {
+    const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour12: false,
+    };
+
+    if (includeTime) {
+        options.hour = 'numeric';
+        options.minute = 'numeric';
+    }
+
+    return new Date(dateObj).toLocaleString('ch-DE', options);
+};

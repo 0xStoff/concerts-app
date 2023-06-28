@@ -7,7 +7,6 @@ export function AddTicket() {
         <TouchableOpacity
             style={styles.button}
             onPress={() => alert('press')}>
-
             <Text style={styles.text}>+ Add Ticket</Text>
         </TouchableOpacity>
     )

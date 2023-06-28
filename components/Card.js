@@ -1,116 +1,44 @@
-import {StyleSheet, Text, TouchableOpacity, View} from "react-native";
-import {Image} from "expo-image";
+import {StyleSheet, TouchableOpacity, View} from "react-native";
 import React from "react";
-import {BASE_SIZE, screenWidth} from "../utils/constants";
-import {assetLocation} from "../utils/data";
 import {useNavigation} from "@react-navigation/native";
-import {classifyEventByDate, toLocaleString} from "../utils/utils";
+import {BasicImage} from "./BasicImage";
+import {EventDetails} from "./EventDetails";
+import {screenWidth} from "../utils/constants";
 
 
-export function Card({asset, title, location, city, time, liveToday = false}) {
+export function Card(item) {
     const navigation = useNavigation();
-
-    const {isPastEvent, isTodayEvent, isUpcomingEvent} = classifyEventByDate(time)
-
-    if (isPastEvent) return null
-
     return (
+        <View style={{flex:1}}>
         <TouchableOpacity
-            onPress={() => navigation.navigate('Details', {asset, title, location, city, time, liveToday})}
+            onPress={() => navigation.navigate('Details', {...item})}
             style={styles.card}>
-            <Image
-                style={styles.image}
-                source={{uri: `${assetLocation}/${asset}`}}
-                loading='eager'
-                transition={500}
-            />
-            <View style={styles.textContainer}>
-                <View style={styles.captionContainer}>
-                    <Text style={styles.caption}>{toLocaleString(time)}</Text>
-                    <View style={styles.badge}>
-                        {isTodayEvent && <Text style={[styles.badgeText, {color: '#4D0EFF'}]}>Live Now</Text>}
-                        {isUpcomingEvent && <Text style={[styles.badgeText, {color: '#0A84FF'}]}>Upcoming</Text>}
-                    </View>
-                </View>
-                <Text style={styles.title}>{title}</Text>
-                <Text style={styles.subTitle}>{location}</Text>
-                <Text style={styles.caption}>{city}</Text>
-            </View>
+            <BasicImage style={{flex: 1}} asset={item.asset}/>
+            <EventDetails customStyles={eventDetailsStyle} {...item} />
         </TouchableOpacity>
+        </View>
     )
 }
 
-const flexBox = {
-    display: 'flex',
-    flexDirection: 'row',
-};
-
 const styles = StyleSheet.create({
-    badge: {
-        ...flexBox,
-        paddingVertical: 4,
-
-        paddingHorizontal: 8,
-        borderRadius: 12,
-        marginHorizontal: 10,
-        backgroundColor: 'rgba(77, 14, 255, 0.20)',
-    },
-    badgeText: {
-        fontFamily: 'Inter-Medium',
-        fontSize: 12 * 0.8,
-
-    },
     card: {
         width: screenWidth * 0.65,
-        aspectRatio: 0.832,
+        aspectRatio: 0.8,
         borderRadius: 8,
         overflow: 'hidden',
-    },
-    caption: {
+        marginBottom: 30,
+    }
+})
 
-        color: '#667085',
-        fontSize: BASE_SIZE,
-        fontFamily: 'Inter-Light',
-    },
-    captionContainer: {
-        ...flexBox,
-        // flex:1,
-
-        alignItems: 'center'
-    },
-    image: {
-        flex: 0.75,
-        // alignSelf: 'center',
-
-    },
-    subTitle: {
-        // flex:1,
-        color: '#000',
-        fontSize: BASE_SIZE * 1.2,
-        fontFamily: 'Inter-Regular',
-    },
-    textContainer: {
-        flex: 0.45,
-        justifyContent: 'center',
-        backgroundColor: '#fff',
+const eventDetailsStyle = {
+    container: {
         padding: 20,
-        borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: -10,
-        },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 2,
     },
     title: {
-        // flex:1,
-
-        color: '#000',
-        fontSize: BASE_SIZE * 1.8,
-        fontFamily: 'Inter-Bold',
-        paddingVertical: BASE_SIZE * 0.5,
+        paddingTop: 10,
+        paddingBottom: 5
     },
-});
-
+    location: {
+        paddingBottom: 1
+    }
+}
