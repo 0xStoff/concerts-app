@@ -1,122 +1,141 @@
 import Screen from "../components/Screen";
-import {FlatList, Modal, Pressable, ScrollView, StyleSheet, TouchableOpacity, View} from "react-native";
-import React, {useState} from "react";
+import {FlatList, Image, StyleSheet, TouchableOpacity, View} from "react-native";
+import React, {useEffect, useState} from "react";
 import {shadow} from "../utils/basicStyles";
 import {BasicImage} from "../components/BasicImage";
 import {EventDetails} from "../components/EventDetails";
 import {BasicButton} from "../components/BasicButton";
 import {QrTicketModal} from "../components/QrTicketModal";
-import {screenHeight, screenWidth} from "../utils/constants";
+import {screenHeight} from "../utils/constants";
 import {useBrightnessModal} from "../hooks/useBrightnessModal";
 import {classifyEventByDate} from "../utils/utils";
+import {ImageModal} from "../components/ImageModal";
+import {GalleryGridIcon} from "../components/GalleryGridIcon";
+import * as SQLite from "expo-sqlite";
+import * as ImagePicker from "expo-image-picker";
 
-export function DetailsScreen({route: {params: item}}) {
-    let ticketId = "Fick dich du Huresohn!";
-    const {isModalVisible, openModal, closeModal} = useBrightnessModal();
+const ListHeader = ({item, openModal, showColumns, setShowColumns}) => <View style={{marginBottom: 160}}>
+    <BasicImage
+        asset={item.asset}
+        style={styles.image}
+    />
+    <EventDetails
+        children={!classifyEventByDate(item.time) && <BasicButton text='View Ticket' onPress={openModal}/>}
+        customStyles={eventDetailsStyle}
+        {...item}
+    />
+
+    <GalleryGridIcon showColumns={showColumns} setShowColumns={setShowColumns}/>
+</View>
+
+const MemoizedTouchableOpacity = React.memo((props) => (
+    <TouchableOpacity
+        style={styles.imageGridItem}
+        key={props.item}
+        onPress={props.onPress}
+    >
+        <Image
+            source={{uri: props.item.uri}}
+            cachePolicy='memory-disk'
+            style={{flex: 1, borderRadius: 3}}
+        />
+    </TouchableOpacity>
+));
+
+const renderItem = (item, onPress) => <MemoizedTouchableOpacity item={item} onPress={onPress}/>;
+
+const itemsPerPage = 20;  // Adjust this value as needed
+
+export function DetailsScreen({route: {params: id}}) {
     const [showColumns, setShowColumns] = useState(true)
+    const [imageToView, setImageToView] = useState(null);
+    const {isModalVisible, openModal, closeModal} = useBrightnessModal();
+    const [item, setItem] = useState([])
+    const [images, setImages] = useState([]);
+    const [page, setPage] = useState(0);
+    const db = SQLite.openDatabase('concerts_db');
 
-    const [imageToView, setImageToView] = React.useState(null);
-    const image = ['conc1.jpg', 'conc2.jpeg', 'conc3.jpeg', 'conc4.jpeg', 'rosa.jpeg', 'coldplay5.jpg', 'taylor.jpeg', 'me.png'];
-    const images = [...image, ...image, ...image, ...image, ...image, ...image]
-    const {isPastEvent} = classifyEventByDate(item.time)
+    useEffect(() => {
+        db.transaction(tx => {
+            tx.executeSql(
+                'SELECT * FROM past_events WHERE id = ?',
+                [id],
+                (_, result) => {
+                    const row = result.rows.item(0);
+                    const item = {
+                        id: row.id,
+                        asset: row.asset,
+                        title: row.title,
+                        location: row.location,
+                        city: row.city,
+                        time: row.time,
+                        ticketId: row.ticketId,
+                        memories: JSON.parse(row.memories)
+                    };
 
-    const keyExtractor = (item, index) => `${item}-${index}`;
+                    setItem(item)
+                    setImages(item.memories);
+                },
+                (_, error) => console.log('Error fetching events:', error)
+            );
+        });
+    }, [])
 
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsMultipleSelection: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
 
-    const renderFlatList = () => <FlatList
-        data={images}
-        keyExtractor={keyExtractor}
+        if (!result.canceled) {
+            const imageURIs = result.assets.map(asset => ({uri: asset.uri}));
+            setImages(prevImages => [...prevImages, ...imageURIs])
+                db.transaction(tx => {
+                    tx.executeSql(
+                        'UPDATE past_events SET memories = ? WHERE id = ?',
+                        [JSON.stringify([...images, ...imageURIs]), id],
+                        (_, result) => console.log('Memories updated for event:', id),
+                        (_, error) => console.log('Error updating memories:', error)
+                    );
+                });
+
+        }
+    };
+
+    const loadMoreItems = () => {
+        setPage(prevPage => prevPage + 1);
+    }
+
+    const renderFlatList = (numColumns) => <FlatList
+        data={images.slice(0, page * itemsPerPage)}
+        keyExtractor={(item, index) => `${item}-${index}`}
         horizontal={false}
-        numColumns={2}
+        numColumns={numColumns}
         removeClippedSubviews={true}
-        windowSize={5}
+        windowSize={3}
         ListHeaderComponent={
-            <View style={{marginBottom: 120}}>
-                <BasicImage
-                    asset={item.asset}
-                    style={styles.image}
-                />
-                <EventDetails
-                    children={!isPastEvent && <BasicButton text='View Ticket' onPress={openModal}/>}
-                    customStyles={eventDetailsStyle}
-                    {...item}
-                />
-            </View>
-        }
-        renderItem={({item}) =>
-            <TouchableOpacity
-                style={styles.imageGridItem}
-                key={item}
-                onPress={() => setImageToView(item)}
-            >
-                <BasicImage style={{flex: 1, borderRadius: 3}} asset={item}/>
-            </TouchableOpacity>
-        }
+            <ListHeader
+                item={item}
+                openModal={openModal}
+                showColumns={showColumns}
+                setShowColumns={setShowColumns}
+            />}
+        renderItem={({item}) => renderItem(item, () => setImageToView(item.uri))}
+        onEndReached={loadMoreItems}
+        onEndReachedThreshold={0.5}
     />
-    const renderFlatList1 = () => <FlatList
-        data={images}
-        keyExtractor={keyExtractor}
-        horizontal={false}
-        numColumns={1}
-        removeClippedSubviews={true}
-        windowSize={5}
-        ListHeaderComponent={
-            <View style={{marginBottom: 120}}>
-                <BasicImage
-                    asset={item.asset}
-                    style={styles.image}
-                />
-                <EventDetails
-                    children={!isPastEvent && <BasicButton text='View Ticket' onPress={openModal}/>}
-                    customStyles={eventDetailsStyle}
-                    {...item}
-                />
-            </View>
-        }
-        renderItem={({item}) =>
-            <TouchableOpacity
-                style={[styles.imageGridItem, {width:'100%'}]}
-                key={item}
-                onPress={() => setImageToView(item)}
-            >
-                <BasicImage style={{flex: 1, borderRadius: 3}} asset={item}/>
-            </TouchableOpacity>
-        }
-    />
+
     return (
         <Screen style={{paddingTop: 0}}>
-            {showColumns && renderFlatList() }
-            {!showColumns && renderFlatList1()}
-            <BasicButton
-                text='+ Upload'
-                customStyles={customButtonStyle}
-                onPress={() => setShowColumns(!showColumns)}
-            />
-            <QrTicketModal ticketId={ticketId} isModalVisible={isModalVisible} closeModal={closeModal}/>
+            {showColumns && renderFlatList(2)}
+            {!showColumns && renderFlatList(1)}
+            <BasicButton text='+ Upload' customStyles={customButtonStyle} onPress={pickImage}/>
+            <QrTicketModal ticketId={item.ticketId} isModalVisible={isModalVisible} closeModal={closeModal}/>
             <ImageModal imageToView={imageToView} setImageToView={setImageToView}/>
         </Screen>
     );
-}
-
-function ImageModal({imageToView, setImageToView}) {
-    return (
-        <Modal
-            animationType="slide"
-            transparent={false}
-            visible={!!imageToView}
-            onRequestClose={() => setImageToView(null)}
-            onPress={() => alert('he')}
-        >
-            <View style={styles.modalContainer}>
-                <Pressable onPress={() => setImageToView(null)}>
-                    <BasicImage
-                        asset={imageToView}
-                        style={styles.fullScreenImage}
-                    />
-                </Pressable>
-            </View>
-        </Modal>
-    )
 }
 
 const customButtonStyle = {
@@ -140,7 +159,6 @@ const eventDetailsStyle = {
         ...shadow,
         shadowOffset: {height: 10},
         elevation: 4,
-
     },
     title: {
         paddingTop: 10,
@@ -150,7 +168,6 @@ const eventDetailsStyle = {
         paddingBottom: 1
     }
 }
-
 
 const styles = StyleSheet.create({
     image: {
@@ -165,19 +182,8 @@ const styles = StyleSheet.create({
         marginTop: 100
     },
     imageGridItem: {
+        flex: 1,
         aspectRatio: 1,
-        width: '50%',
         padding: 2,
     },
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'black'
-    },
-    fullScreenImage: {
-        height: screenHeight,
-        width: screenWidth,
-        contentFit: 'contain',
-    }
 });

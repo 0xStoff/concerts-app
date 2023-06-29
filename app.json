@@ -15,6 +15,9 @@
       "**/*"
     ],
     "ios": {
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "This app requires access to your photo library for selecting images."
+      },
       "supportsTablet": true,
       "requireFullScreen": true
     },

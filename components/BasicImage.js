@@ -1,14 +1,14 @@
 import {Image} from "expo-image";
-import {assetLocation} from "../utils/data";
 import {blurhash} from "../utils/constants";
 import React from "react";
 import {Platform} from "react-native";
 
 
 export function BasicImage({asset, style}) {
+    if (!asset) return null;
     return (
         <Image
-            source={{uri: `${assetLocation}/${asset}`}}
+            source={{uri: asset}}
             // transition={100}
             cachePolicy='memory-disk'
             recyclingKey={asset.toString()}

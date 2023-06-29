@@ -1,16 +1,16 @@
 import Screen from "../components/Screen";
 import {FlatList, StyleSheet, Text, View} from "react-native";
-import {cardData, userData} from "../utils/data";
+import {pastEventsData, userData} from "../utils/data";
 import {WideCard} from "../components/WideCard";
-import React, {useCallback} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {ScrollHeader} from "../components/ScrollHeader";
 import {BasicImage} from "../components/BasicImage";
 import {BASE_SIZE} from "../utils/constants";
-
+import { useDatabase} from "../sqlite/sqli";
 
 export function HomeScreen({}) {
-
     const renderItem = useCallback(({item}) => <WideCard {...item} />, []);
+    const events = useDatabase();
 
     return (
         <Screen>
@@ -19,13 +19,7 @@ export function HomeScreen({}) {
                 <BasicImage asset={userData.avatar} style={styles.avatar}/>
             </View>
             <FlatList
-                data={cardData}
-                // initialNumToRender={10}
-                // maxToRenderPerBatch={10}
-                // updateCellsBatchingPeriod={50}
-                // removeClippedSubviews={true}
-                // windowSize={3}
-                // TODO: reactnativefastimage
+                data={events}
                 keyExtractor={(item, index) => index.toString()}
                 ListHeaderComponent={ScrollHeader}
                 renderItem={renderItem}
@@ -34,7 +28,6 @@ export function HomeScreen({}) {
         </Screen>
     );
 }
-
 
 const flexBox = {
     display: 'flex',

@@ -6,29 +6,20 @@ import {EventDetails} from "./EventDetails";
 import {screenWidth} from "../utils/constants";
 
 
-export function Card(item) {
+function CardComponent(item) {
     const navigation = useNavigation();
     return (
-        <View style={{flex:1}}>
         <TouchableOpacity
-            onPress={() => navigation.navigate('Details', {...item})}
-            style={styles.card}>
+            onPress={() => navigation.navigate('Details', item.id)}
+            style={styles.card}
+        >
             <BasicImage style={{flex: 1}} asset={item.asset}/>
             <EventDetails customStyles={eventDetailsStyle} {...item} />
         </TouchableOpacity>
-        </View>
     )
 }
 
-const styles = StyleSheet.create({
-    card: {
-        width: screenWidth * 0.65,
-        aspectRatio: 0.8,
-        borderRadius: 8,
-        overflow: 'hidden',
-        marginBottom: 30,
-    }
-})
+export const Card = React.memo(CardComponent)
 
 const eventDetailsStyle = {
     container: {
@@ -42,3 +33,14 @@ const eventDetailsStyle = {
         paddingBottom: 1
     }
 }
+
+const styles = StyleSheet.create({
+    card: {
+        width: screenWidth * 0.65,
+        aspectRatio: 0.8,
+        borderRadius: 8,
+        overflow: 'hidden',
+        marginBottom: 30,
+    }
+})
+

@@ -2,22 +2,15 @@ import {StyleSheet, TouchableOpacity} from "react-native";
 import React from "react";
 import {screenWidth} from "../utils/constants";
 import {useNavigation} from "@react-navigation/native";
-import {classifyEventByDate} from "../utils/utils";
 import {EventDetails} from "./EventDetails";
 import {BasicImage} from "./BasicImage";
 import {shadow} from "../utils/basicStyles";
-// import FastImage from 'react-native-fast-image'
-
 
 function WideCardComponent(item) {
     const navigation = useNavigation();
-
-    const {isPastEvent} = classifyEventByDate(item.time)
-    if (!isPastEvent) return null
-
     return (
         <TouchableOpacity
-            onPress={() => navigation.navigate('Details', {...item})}
+            onPress={() => navigation.navigate('Details', item.id)}
             style={styles.card}
         >
             <EventDetails

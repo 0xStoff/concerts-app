@@ -6,9 +6,9 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {DetailsScreen} from "./screens/DetailsScreen";
 import {HomeScreen} from "./screens/HomeScreen";
 import Screen from "./components/Screen";
-import {TouchableNativeFeedback, Image, View, StatusBar} from 'react-native';
-import * as ScreenOrientation from "expo-screen-orientation";
+import {TouchableNativeFeedback, View} from 'react-native';
 import {BasicImage} from "./components/BasicImage";
+import {assetLocation} from "./utils/data";
 
 const Stack = createStackNavigator();
 
@@ -49,7 +49,7 @@ export default function App() {
                                     onPress={() => navigation.goBack()}
                                 >
                                     <View style={{marginLeft: 25, marginTop: 45}}>
-                                        <BasicImage asset={'back.png'} style={{width: 35, height: 35}}/>
+                                        <BasicImage asset={`${assetLocation}/back.png`} style={{width: 35, height: 35}}/>
                                     </View>
                                 </TouchableNativeFeedback>
                             ),
@@ -57,6 +57,6 @@ export default function App() {
                     />
                 </Stack.Navigator>
             </NavigationContainer>
-        </Screen>
+         </Screen>
     )
 }
