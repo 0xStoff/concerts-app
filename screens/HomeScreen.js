@@ -1,16 +1,22 @@
-import Screen from "../components/Screen";
-import {FlatList, StyleSheet, Text, View} from "react-native";
-import {pastEventsData, userData} from "../utils/data";
+import React, {useCallback} from "react";
+import {Button, FlatList, StyleSheet, Text, View} from "react-native";
 import {WideCard} from "../components/WideCard";
-import React, {useCallback, useEffect, useState} from "react";
-import {ScrollHeader} from "../components/ScrollHeader";
+import {useDatabase} from "../sqlite/sqli";
+import {BasicButton} from "../components/BasicButton";
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
+import {userData} from "../utils/data";
 import {BasicImage} from "../components/BasicImage";
+import {ScrollHeader} from "../components/ScrollHeader";
+import Screen from "../components/Screen";
 import {BASE_SIZE} from "../utils/constants";
-import { useDatabase} from "../sqlite/sqli";
+
+
+
 
 export function HomeScreen({}) {
-    const renderItem = useCallback(({item}) => <WideCard {...item} />, []);
     const events = useDatabase();
+    const renderItem = useCallback(({item}) => <WideCard {...item} />, []);
 
     return (
         <Screen>
@@ -18,6 +24,7 @@ export function HomeScreen({}) {
                 <Text style={styles.welcome}>Welcome, {userData.username}</Text>
                 <BasicImage asset={userData.avatar} style={styles.avatar}/>
             </View>
+
             <FlatList
                 data={events}
                 keyExtractor={(item, index) => index.toString()}
@@ -28,6 +35,7 @@ export function HomeScreen({}) {
         </Screen>
     );
 }
+
 
 const flexBox = {
     display: 'flex',

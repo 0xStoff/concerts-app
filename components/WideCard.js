@@ -8,6 +8,7 @@ import {shadow} from "../utils/basicStyles";
 
 function WideCardComponent(item) {
     const navigation = useNavigation();
+    if(item.type !== 'past') return null
     return (
         <TouchableOpacity
             onPress={() => navigation.navigate('Details', item.id)}

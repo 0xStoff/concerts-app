@@ -8,6 +8,7 @@ import {screenWidth} from "../utils/constants";
 
 function CardComponent(item) {
     const navigation = useNavigation();
+    if(item.type === 'past') return
     return (
         <TouchableOpacity
             onPress={() => navigation.navigate('Details', item.id)}
@@ -41,6 +42,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         overflow: 'hidden',
         marginBottom: 30,
+        marginRight: 15
     }
 })
 

@@ -31,7 +31,6 @@ export default function App() {
         return null;
     }
 
-
     return (
         <Screen onLayoutRootView={onLayoutRootView}>
             <NavigationContainer>
