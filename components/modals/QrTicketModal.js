@@ -1,9 +1,9 @@
-import {Modal, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {Modal, StyleSheet, View} from "react-native";
 import QRCode from "react-native-qrcode-svg";
-import {BASE_SIZE, screenHeight, screenWidth} from "../utils/constants";
+import {screenWidth} from "../../utils/constants";
 import React from "react";
-import {shadow} from "../utils/basicStyles";
-import {BasicButton} from "./BasicButton";
+import {shadow} from "../../utils/basicStyles";
+import {BasicButton} from "../basics/BasicButton";
 
 export function QrTicketModal({ticketId, isModalVisible, closeModal}) {
 
@@ -20,7 +20,7 @@ export function QrTicketModal({ticketId, isModalVisible, closeModal}) {
                         value={ticketId}
                         size={screenWidth * 0.9}
                     />
-                    <BasicButton text='Hide' onPress={closeModal}/>
+                    <BasicButton title='Hide' onPress={closeModal}/>
                 </View>
             </View>
         </Modal>

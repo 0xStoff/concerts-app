@@ -6,7 +6,7 @@ import {
     View,
     Pressable, FlatList
 } from "react-native";
-import {BasicImage} from "./BasicImage";
+import {BasicImage} from "../components/basics/BasicImage";
 import {screenHeight, screenWidth} from "../utils/constants";
 
 {/*{images.map(image => (*/}

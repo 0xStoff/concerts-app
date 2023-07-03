@@ -1,14 +1,11 @@
 import {StyleSheet, Text, TouchableOpacity} from "react-native";
 import {BASE_SIZE} from "../utils/constants";
 import React from "react";
+import {BasicButton} from "../components/basics/BasicButton";
 
-export function AddTicket() {
+export function AddTicket({onPress}) {
     return (
-        <TouchableOpacity
-            style={styles.button}
-            onPress={() => alert('press')}>
-            <Text style={styles.text}>+ Add Ticket</Text>
-        </TouchableOpacity>
+        <BasicButton onPress={onPress} title={'+ Add Ticket'} customStyles={styles} />
     )
 }
 

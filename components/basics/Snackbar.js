@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Animated, StyleSheet, Text, View} from 'react-native';
-import {basicStyles} from "../utils/basicStyles";
+import {basicStyles} from "../../utils/basicStyles";
 
 
 export const Snackbar = ({message, duration = 3000 || 'permanent'}) => {

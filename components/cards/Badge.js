@@ -1,8 +1,8 @@
-import {classifyEventByDate} from "../utils/utils";
+import {classifyEventByDate} from "../../utils/utils";
 import {StyleSheet, Text, View} from "react-native";
-import {basicStyles} from "../utils/basicStyles";
+import {basicStyles} from "../../utils/basicStyles";
 import React from "react";
-import {BASE_SIZE, screenWidth} from "../utils/constants";
+import {BASE_SIZE, screenWidth} from "../../utils/constants";
 
 export function Badge({time}) {
     const {isPastEvent, isTodayEvent, isUpcomingEvent} = classifyEventByDate(time)

@@ -7,7 +7,7 @@ import * as Sharing from "expo-sharing";
 import {classifyEventByDate} from "../utils/utils";
 
 
-const db = SQLite.openDatabase('concerts_db');
+// const db = SQLite.openDatabase('concerts_db');
 
 
 const shareDB = () => Sharing.shareAsync(
@@ -16,45 +16,7 @@ const shareDB = () => Sharing.shareAsync(
 );
 
 
-function createTables() {
-    db.transaction(tx => {
-        tx.executeSql(
-            'CREATE TABLE IF NOT EXISTS future_events (id INTEGER PRIMARY KEY AUTOINCREMENT, asset TEXT, title TEXT, location TEXT, city TEXT, time TEXT, ticketId TEXT, memories TEXT)'
-        );
-    });
-    db.transaction(tx => {
-        tx.executeSql(
-            'CREATE TABLE IF NOT EXISTS past_events (id INTEGER PRIMARY KEY AUTOINCREMENT, asset TEXT, title TEXT, location TEXT, city TEXT, time TEXT, ticketId TEXT, memories TEXT)'
-        );
-    });
-}
-
-// function insertEvents() {
-//     db.transaction(tx => {
-//         pastEventsData.forEach(event => {
-//             tx.executeSql(
-//                 `INSERT INTO past_events (asset, title, location, city, time, ticketId, memories) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-//                 [event.asset, event.title, event.location, event.city, event.time, event.ticketId, JSON.stringify(event.memories)],
-//                 (_, result) => console.log('Event inserted:', result.insertId),
-//                 (_, error) => console.log('Error inserting event:', error)
-//             );
-//         });
-//     });
-//
-//     db.transaction(tx => {
-//         futureEventsData.forEach(event => {
-//             tx.executeSql(
-//                 `INSERT INTO future_events (asset, title, location, city, time, ticketId, memories) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-//                 [event.asset, event.title, event.location, event.city, event.time, event.ticketId, JSON.stringify(event.memories)],
-//                 (_, result) => console.log('Event inserted:', result.insertId),
-//                 (_, error) => console.log('Error inserting event:', error)
-//             );
-//         });
-//     });
-// }
-
-
-function createTable() {
+function createTable(db) {
     db.transaction(tx => {
         tx.executeSql(
             'CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT, asset TEXT, title TEXT, location TEXT, city TEXT, time TEXT, ticketId TEXT, memories TEXT)'
@@ -63,7 +25,7 @@ function createTable() {
 }
 
 
-function insertEvents() {
+export function insertEvents() {
     db.transaction(tx => {
         pastEventsData.forEach(event => {
             tx.executeSql(
@@ -100,13 +62,16 @@ export async function updateMemorieByEventId(id, memories) {
         );
     });
 }
+
 export async function fetchEventData(id) {
     return new Promise((resolve, reject) => {
+        const db = SQLite.openDatabase('concerts_db');
         db.transaction((tx) => {
             tx.executeSql(
                 'SELECT * FROM events WHERE id = ?',
                 [id],
                 (_, result) => {
+                    // db.closeAsync()
                     if (result.rows.length === 0) {
                         // resolve(null);
                         reject('no event with given id found')
@@ -145,7 +110,7 @@ export async function fetchEventData(id) {
 }
 
 
-async function fetchEvents() {
+async function fetchEvents(db) {
     return new Promise((resolve, reject) => {
         db.transaction(tx => {
             tx.executeSql(
@@ -190,40 +155,6 @@ async function fetchEvents() {
 }
 
 
-// async function fetchEvents(table = 'past_events') {
-//     return new Promise((resolve, reject) => {
-//         db.transaction(tx => {
-//             tx.executeSql(
-//                 `SELECT * FROM ${table}`,
-//                 [],
-//                 (_, result) => {
-//                     const fetchedEvents = [];
-//                     for (let i = 0; i < result.rows.length; i++) {
-//                         const row = result.rows.item(i);
-//                         fetchedEvents.push({
-//                             id: row.id,
-//                             asset: row.asset,
-//                             title: row.title,
-//                             location: row.location,
-//                             city: row.city,
-//                             time: row.time,
-//                             ticketId: row.ticketId,
-//                             memories: JSON.parse(row.memories)
-//                         });
-//                     }
-//
-//                     resolve(fetchedEvents);
-//                 },
-//                 (_, error) => {
-//                     console.log('Error fetching events:', error);
-//                     reject(error);
-//                 }
-//             );
-//         });
-//     });
-// }
-
-
 async function deleteDatabase() {
 
     try {
@@ -236,25 +167,21 @@ async function deleteDatabase() {
 }
 
 
-export function useDatabase() {
+export function useEvents() {
     const [events, setEvents] = useState([]);
-
+    const db = SQLite.openDatabase('concerts_db');
 
     const fetch = async () => {
-
         // deleteDatabase();
-        createTable();
+        createTable(db)
         // insertEvents();
-        const fetchedEvents = await fetchEvents();
+        const fetchedEvents = await fetchEvents(db);
         setEvents(fetchedEvents)
-
-
     }
 
 
     useEffect(() => {
         fetch()
-
         return () => db.closeAsync()
     }, []);
 
@@ -263,23 +190,27 @@ export function useDatabase() {
 }
 
 
-// db.transaction((tx) => {
-//     tx.executeSql('UPDATE past_events SET memories = NULL WHERE id = 1;', [],
-//         (tx, results) => { console.log('Row updated!') },
-//         error => { console.error(error) }
-//     );
-// });
+export function useEventById(id) {
+    const [item, setItem] = useState({memories: []})
+    const [error, setError] = useState(null)
 
 
-// db.transaction(tx => {
-//     // console.log(tx)
-//     tx.executeSql(
-//         'SELECT ',
-//         [],
-//         (_, result) => {
-//             console.log("SUCCESSFUL")
-//             // ...
-//         },
-//         (_, error) => console.log('Error fetching events:', error)
-//     );
-// });
+    const fetch = async () => {
+        try {
+            const item = await fetchEventData(id)
+            setItem(item);
+        } catch (err) {
+            setError(err.toString())
+        }
+    }
+
+
+    useEffect(() => {
+        const db = SQLite.openDatabase('concerts_db');
+        fetch()
+        return () => db.closeAsync()
+    }, [])
+
+    return {item, setItem, error, setError};
+}
+

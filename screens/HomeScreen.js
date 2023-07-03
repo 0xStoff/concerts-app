@@ -1,22 +1,27 @@
-import React, {useCallback} from "react";
-import {Button, FlatList, StyleSheet, Text, View} from "react-native";
-import {WideCard} from "../components/WideCard";
-import {useDatabase} from "../sqlite/sqli";
-import {BasicButton} from "../components/BasicButton";
-import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system';
-import {userData} from "../utils/data";
-import {BasicImage} from "../components/BasicImage";
-import {ScrollHeader} from "../components/ScrollHeader";
-import Screen from "../components/Screen";
+import React, {useCallback, useEffect, useState} from "react";
+import {Button, FlatList, StyleSheet, Text, useWindowDimensions, View} from "react-native";
+import {useEvents} from "../sqlite/sqli";
+import {assetLocation, userData} from "../utils/data";
+import {BasicImage} from "../components/basics/BasicImage";
+import {ScrollHeader} from "../components/headers/ScrollHeader";
+import Screen from "../components/basics/Screen";
 import {BASE_SIZE} from "../utils/constants";
-
-
+import {Card} from "../components/cards/Card";
+import {BarCodeScanner} from "expo-barcode-scanner";
+import {BasicButton} from "../components/basics/BasicButton";
+import {TouchableNativeFeedback} from "react-native-gesture-handler";
+import {useNavigation} from "@react-navigation/native";
 
 
 export function HomeScreen({}) {
-    const events = useDatabase();
-    const renderItem = useCallback(({item}) => <WideCard {...item} />, []);
+    const events = useEvents();
+
+    const navigation = useNavigation()
+
+    const sortedEvents = events.sort((a, b) => Date.parse(b.time) - Date.parse(a.time));
+    const renderItem = useCallback(({item}) => <Card cardType='wide' {...item} />, []);
+
+
 
     return (
         <Screen>
@@ -24,18 +29,23 @@ export function HomeScreen({}) {
                 <Text style={styles.welcome}>Welcome, {userData.username}</Text>
                 <BasicImage asset={userData.avatar} style={styles.avatar}/>
             </View>
-
             <FlatList
-                data={events}
-                keyExtractor={(item, index) => index.toString()}
-                ListHeaderComponent={ScrollHeader}
+                data={sortedEvents}
+                keyExtractor={(item) => item.id}
+                ListHeaderComponent={<ScrollHeader
+                    addTicketButton={<BasicButton
+                        // onPress={() => setScanMode(true)}
+                        onPress={() => navigation.navigate('AddTicket')}
+                        title={'+ Add Ticket'}
+                        customStyles={styles}
+                    />}
+                />}
                 renderItem={renderItem}
                 showsVerticalScrollIndicator={false}
             />
         </Screen>
     );
 }
-
 
 const flexBox = {
     display: 'flex',
@@ -51,6 +61,19 @@ const styles = StyleSheet.create({
         height: 55,
         borderRadius: 55
     },
+    button: {
+        paddingVertical: 6,
+        paddingHorizontal: 14,
+        borderRadius: 10,
+        width: 'auto',
+        backgroundColor: 'rgba(203, 203, 203, 0.20)',
+    },
+    text: {
+        color: '#878787',
+        textAlign: 'center',
+        fontSize: BASE_SIZE * 1.2,
+        fontFamily: 'Inter-Medium',
+    },
     welcomeHeader: {
         ...flexBox,
         marginVertical: 10
@@ -60,5 +83,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Inter-Bold',
         fontSize: BASE_SIZE * 2.8,
         marginVertical: 30,
-    }
+    },
+
 });

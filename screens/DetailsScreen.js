@@ -1,39 +1,17 @@
-import Screen from "../components/Screen";
+import Screen from "../components/basics/Screen";
 import React, {useEffect, useState} from "react";
-import {BasicButton} from "../components/BasicButton";
-import {QrTicketModal} from "../components/QrTicketModal";
+import {BasicButton} from "../components/basics/BasicButton";
+import {QrTicketModal} from "../components/modals/QrTicketModal";
 import {useBrightnessModal} from "../hooks/useBrightnessModal";
-import {ImageModal} from "../components/ImageModal";
+import {ImageModal} from "../components/modals/ImageModal";
 import * as ImagePicker from "expo-image-picker";
-import {fetchEventData, updateMemorieByEventId} from "../sqlite/sqli";
-import {Snackbar} from "../components/Snackbar";
-import {DetailsGalleryFlatlist} from "../components/DetailsGalleryFlatlist";
+import {fetchEventData, updateMemorieByEventId, useEventById} from "../sqlite/sqli";
+import {Snackbar} from "../components/basics/Snackbar";
+import {DetailsGalleryFlatlist} from "../components/details/DetailsGalleryFlatlist";
+import {MAXIMUM_FILES} from "../utils/constants";
+import * as SQLite from "expo-sqlite";
 
-const MAXIMUM_FILES = 40;
-
-export function DetailsScreen({route: {params: id}}) {
-    const [showColumns, setShowColumns] = useState(true)
-    const [imageToView, setImageToView] = useState(null);
-    const {isModalVisible, openModal, closeModal} = useBrightnessModal();
-    const [item, setItem] = useState({memories: []})
-    const [error, setError] = useState(null)
-
-
-    const fetch = async () => {
-        try {
-            const item = await fetchEventData(id)
-            setItem(item);
-        } catch (err) {
-            setError(err.toString())
-        }
-    }
-
-
-    useEffect(() => {
-        fetch()
-
-    }, [])
-
+function extracted(setError, setItem, id, item) {
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -59,6 +37,15 @@ export function DetailsScreen({route: {params: id}}) {
 
         }
     };
+    return pickImage;
+}
+
+export function DetailsScreen({route: {params: id}}) {
+    const [showColumns, setShowColumns] = useState(true)
+    const [imageToView, setImageToView] = useState(null);
+    const {isModalVisible, openModal, closeModal} = useBrightnessModal();
+    const {item, error, setError, setItem} = useEventById(id)
+    const pickImage = extracted(setError, setItem, id, item);
 
 
     if (error && !item.id) return <Snackbar duration='permanent' message={error}/>
@@ -75,7 +62,8 @@ export function DetailsScreen({route: {params: id}}) {
         <Screen style={{paddingTop: 0}}>
             {showColumns && <DetailsGalleryFlatlist numColumns={2}  {...flatListProps}/>}
             {!showColumns && <DetailsGalleryFlatlist numColumns={1} {...flatListProps}/>}
-            {!error && <BasicButton text='+ Upload' customStyles={customButtonStyle} onPress={pickImage}/>}
+            {!error && item.type !== 'future' &&
+                <BasicButton title='+ Upload' customStyles={customButtonStyle} onPress={pickImage}/>}
             <QrTicketModal ticketId={item.ticketId} isModalVisible={isModalVisible} closeModal={closeModal}/>
             <ImageModal imageToView={imageToView} setImageToView={setImageToView}/>
             {error && <Snackbar message={error}/>}

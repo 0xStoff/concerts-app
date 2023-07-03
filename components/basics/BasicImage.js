@@ -1,6 +1,6 @@
 import {Image} from "expo-image";
-import {blurhash} from "../utils/constants";
 import React from "react";
+import {blurhash} from "../../utils/constants";
 import {Platform} from "react-native";
 
 
@@ -9,7 +9,6 @@ export function BasicImage({asset, style}) {
     return (
         <Image
             source={{uri: asset}}
-            // transition={100}
             cachePolicy='memory-disk'
             recyclingKey={asset.toString()}
             placeholder={{

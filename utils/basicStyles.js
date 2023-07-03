@@ -1,5 +1,5 @@
 import {StyleSheet} from "react-native";
-import {BASE_SIZE, screenWidth} from "./constants";
+import {BASE_SIZE} from "./constants";
 
 
 export const shadow = {

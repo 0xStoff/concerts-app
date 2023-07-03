@@ -1,11 +1,8 @@
-import {StyleSheet, Text, View} from "react-native";
-import {basicStyles, shadow} from "../utils/basicStyles";
-import {toLocaleString} from "../utils/utils";
+import {DatePickerIOSComponent, StyleSheet, Text, TextInput, View} from "react-native";
+import {basicStyles} from "../../utils/basicStyles";
+import {toLocaleString} from "../../utils/utils";
 import {Badge} from "./Badge";
 import React from "react";
-import {BASE_SIZE, screenWidth} from "../utils/constants";
-
-
 
 
 export function EventDetails({city, location, time, title, customStyles, includeTime = true, children}) {
@@ -18,6 +15,20 @@ export function EventDetails({city, location, time, title, customStyles, include
             <Text style={[basicStyles.title, customStyles.title]}>{title}</Text>
             <Text style={[basicStyles.subTitle, customStyles.location]}>{location}</Text>
             <Text style={[basicStyles.caption, customStyles.city]}>{city}</Text>
+            {children}
+        </View>
+    )
+}
+
+
+export function EventDetailsInputs({city, location, time, title, customStyles, includeTime = true, children}) {
+    return (
+        <View style={[styles.textContainer, customStyles.container]}>
+            <TextInput  placeholder={toLocaleString(time, includeTime)} style={basicStyles.caption}/>
+            <TextInput placeholder={title} style={[basicStyles.title, customStyles.title]}/>
+            <TextInput placeholder={location} style={[basicStyles.subTitle, customStyles.location]}/>
+            <TextInput placeholder={city} style={[basicStyles.caption, customStyles.city]}/>
+            {/*<DatePickerIOSComponent />*/}
             {children}
         </View>
     )

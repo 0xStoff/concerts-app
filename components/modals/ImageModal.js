@@ -1,8 +1,8 @@
 import {Modal, Pressable, StyleSheet, View} from "react-native";
-import {BasicImage} from "./BasicImage";
+import {BasicImage} from "../basics/BasicImage";
 import React from "react";
-import {shadow} from "../utils/basicStyles";
-import {screenHeight, screenWidth} from "../utils/constants";
+import {shadow} from "../../utils/basicStyles";
+import {screenHeight, screenWidth} from "../../utils/constants";
 
 export function ImageModal({imageToView, setImageToView}) {
     return (
@@ -19,6 +19,7 @@ export function ImageModal({imageToView, setImageToView}) {
                         asset={imageToView}
                         style={styles.fullScreenImage}
                     />
+
                 </Pressable>
             </View>
         </Modal>

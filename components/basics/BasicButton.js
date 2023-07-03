@@ -1,15 +1,15 @@
 import {StyleSheet, Text, TouchableOpacity} from "react-native";
 import React from "react";
-import {BASE_SIZE} from "../utils/constants";
+import {BASE_SIZE} from "../../utils/constants";
 
 
 
-export function BasicButton({text, onPress, customStyles}) {
+export function BasicButton({title, onPress, customStyles}) {
     return (
         <TouchableOpacity
             style={[styles.button, customStyles.button]}
             onPress={onPress}>
-            <Text style={[styles.text, customStyles.text]}>{text}</Text>
+            <Text style={[styles.text, customStyles.text]}>{title}</Text>
         </TouchableOpacity>
     )
 }
