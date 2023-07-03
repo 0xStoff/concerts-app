@@ -64,8 +64,8 @@ export default function App() {
                     <Stack.Screen
                         name="AddTicket"
                         component={AddTicketScreen}
-                        options={({navigation}) => ({
-                            headerShown: true,
+                        options={({navigation, route}) => ({
+                            headerShown:  !route.params?.scanMode,
                             headerTransparent: true,
                             title: '',
                             headerLeft: (props) => (

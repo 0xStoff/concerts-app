@@ -11,41 +11,38 @@ import {DetailsGalleryFlatlist} from "../components/details/DetailsGalleryFlatli
 import {MAXIMUM_FILES} from "../utils/constants";
 import * as SQLite from "expo-sqlite";
 
-function extracted(setError, setItem, id, item) {
-    const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.All,
-            allowsMultipleSelection: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
+const pickImage = async (setError, setItem, id, item) => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsMultipleSelection: true,
+        aspect: [4, 3],
+        quality: 1,
+    });
 
-        if (!result.canceled) {
-            const imageURIs = result.assets.map(asset => ({uri: asset.uri}));
+    if (!result.canceled) {
+        const imageURIs = result.assets.map(asset => ({uri: asset.uri}));
 
-            // ugly -> separate states for errors? fade button
-            if (imageURIs.length > MAXIMUM_FILES) {
-                setError(`Choose a maximum of ${MAXIMUM_FILES} files`)
-                setTimeout(() => {
+        // ugly -> separate states for errors? fade button
+        if (imageURIs.length > MAXIMUM_FILES) {
+            setError(`Choose a maximum of ${MAXIMUM_FILES} files`)
+            setTimeout(() => {
 
-                    setError(null)
-                }, 4000)
-                return null
-            }
-            setItem(prevItem => ({...prevItem, memories: [...prevItem.memories, ...imageURIs]}))
-            await updateMemorieByEventId(id, JSON.stringify([...item.memories, ...imageURIs]))
-
+                setError(null)
+            }, 4000)
+            return null
         }
-    };
-    return pickImage;
-}
+        setItem(prevItem => ({...prevItem, memories: [...prevItem.memories, ...imageURIs]}))
+        await updateMemorieByEventId(id, JSON.stringify([...item.memories, ...imageURIs]))
+
+    }
+};
+
 
 export function DetailsScreen({route: {params: id}}) {
     const [showColumns, setShowColumns] = useState(true)
     const [imageToView, setImageToView] = useState(null);
     const {isModalVisible, openModal, closeModal} = useBrightnessModal();
     const {item, error, setError, setItem} = useEventById(id)
-    const pickImage = extracted(setError, setItem, id, item);
 
 
     if (error && !item.id) return <Snackbar duration='permanent' message={error}/>
@@ -63,7 +60,7 @@ export function DetailsScreen({route: {params: id}}) {
             {showColumns && <DetailsGalleryFlatlist numColumns={2}  {...flatListProps}/>}
             {!showColumns && <DetailsGalleryFlatlist numColumns={1} {...flatListProps}/>}
             {!error && item.type !== 'future' &&
-                <BasicButton title='+ Upload' customStyles={customButtonStyle} onPress={pickImage}/>}
+                <BasicButton title='+ Upload' customStyles={customButtonStyle} onPress={()=> pickImage(setError, setItem, id, item)}/>}
             <QrTicketModal ticketId={item.ticketId} isModalVisible={isModalVisible} closeModal={closeModal}/>
             <ImageModal imageToView={imageToView} setImageToView={setImageToView}/>
             {error && <Snackbar message={error}/>}

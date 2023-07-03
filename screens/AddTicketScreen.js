@@ -1,37 +1,30 @@
 import React, {useEffect, useState} from "react";
 import Screen from "../components/basics/Screen";
 import {BasicButton} from "../components/basics/BasicButton";
-import {QrTicketModal} from "../components/modals/QrTicketModal";
-import {useBrightnessModal} from "../hooks/useBrightnessModal";
-import {ImageModal} from "../components/modals/ImageModal";
 import * as ImagePicker from "expo-image-picker";
-import {fetchEventData, updateMemorieByEventId, useEventById} from "../sqlite/sqli";
 import {Snackbar} from "../components/basics/Snackbar";
-import {BackgroundImageAndCard, DetailsGalleryFlatlist} from "../components/details/DetailsGalleryFlatlist";
-import {MAXIMUM_FILES, screenHeight} from "../utils/constants";
-import * as SQLite from "expo-sqlite";
+import {screenHeight} from "../utils/constants";
 import {BasicImage} from "../components/basics/BasicImage";
-import {EventDetails, EventDetailsInputs} from "../components/cards/EventDetails";
-import {GalleryGridIcon} from "../components/gallery/GalleryGridIcon";
-import {View, StyleSheet, Text, useWindowDimensions, Platform, KeyboardAvoidingView} from "react-native";
+import {EventDetailsInputs} from "../components/cards/EventDetails";
+import {View, StyleSheet, Text, useWindowDimensions, KeyboardAvoidingView, Keyboard, Platform} from "react-native";
 import {assetLocation} from "../utils/data";
-import {basicStyles, shadow} from "../utils/basicStyles";
-import {TouchableNativeFeedback, TouchableOpacity} from "react-native-gesture-handler";
+import {shadow} from "../utils/basicStyles";
+import {TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback} from "react-native-gesture-handler";
 import {BarCodeScanner} from "expo-barcode-scanner";
-import {useNavigation} from "@react-navigation/native";
 
 
 const testItem = {
     "asset": "",
-    "city": "Bern - Schweiz",
-    "id": 3,
-    "location": "Gurtenbahn",
+    "city": "",
+    "id": null,
+    "location": "",
     "memories": [],
-    "ticketId": "Fick dich du Huresohn!",
-    "time": "2022-09-09T19:15:00.000Z",
-    "title": "Rosalia - Gurtenfestival",
-    "type": "past"
+    "ticketId": null,
+    "time": Date.now(),
+    "title": "",
+    "type": "future"
 }
+
 
 function QrRectangle() {
     const {width: windowWidth, height: windowHeight} = useWindowDimensions();
@@ -51,22 +44,19 @@ function QrRectangle() {
     </View>;
 }
 
-function extracted(setError, setItem, id, item) {
-    const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.All,
-            // allowsEditing: true,
-            // allowsMultipleSelection: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
+const pickImage = async (setItem) => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        // allowsEditing: true,
+        // allowsMultipleSelection: true,
+        aspect: [4, 3],
+        quality: 1,
+    });
 
-        if (!result.canceled) {
-            setItem(prevItem => ({...prevItem, asset: result.assets[0].uri}))
-        }
-    };
-    return pickImage;
-}
+    if (!result.canceled) {
+        setItem(prevItem => ({...prevItem, asset: result.assets[0].uri}))
+    }
+};
 
 function ScanView({scanMode, setScanMode}) {
 
@@ -123,12 +113,14 @@ export default function AddTicketScreen({navigation}) {
     const [item, setItem] = useState(testItem)
     const [error, setError] = useState(null)
     const [scanMode, setScanMode] = useState(false);
-    const pickImage = extracted(setError, setItem, item);
-
-    navigation.setOptions({headerShown: !scanMode});
+    // const pickImage = extracted(setItem, item);
 
     if (scanMode) return <ScanView setScanMode={setScanMode} scanMode={scanMode}/>
     if (error && !item.id) return <Snackbar duration='permanent' message={error}/>
+
+    const handleAddEvent = () =>{
+        alert(JSON.stringify(item))
+    }
 
     return (
         <Screen>
@@ -136,26 +128,33 @@ export default function AddTicketScreen({navigation}) {
                 behavior={"position"}
                 style={{flex: 1}}
             >
-                <TouchableOpacity onPress={pickImage}>
-                    {item.asset ? <BasicImage
-                            asset={item.asset}
-                            style={{height: screenHeight * 0.65}}
-                        /> :
-                        <BasicImage
-                            asset={`${assetLocation}/choose.png`}
-                            style={styles.image}
-                        />}
-                </TouchableOpacity>
-                {/*<View style={{flex:1, justifyContent: 'center'}}> */}
-                <EventDetailsInputs
-                    customStyles={eventDetailsStyle}
-                    children={<BasicButton onPress={() => setScanMode(true)} title='Scan ticket'/>}
-                    {...item}
-                />
-                {/*</View>*/}
-                {/*<View style={{flex:1, justifyContent: 'flex-start'}}>*/}
-                {/*</View>*/}
-            <BasicButton title='Add event' customStyles={customButtonStyle} onPress={() => alert('scan')}/>
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <TouchableOpacity onPress={() => pickImage(setItem)}>
+                        {item.asset ? <BasicImage
+                                asset={item.asset}
+                                style={{height: screenHeight * 0.75}}
+                            /> :
+                            <BasicImage
+                                asset={`${assetLocation}/choose.png`}
+                                style={styles.image}
+                            />}
+                    </TouchableOpacity>
+                    <EventDetailsInputs
+                        customStyles={
+                        !item.asset ? eventDetailsStyle :
+                            eventDetailsStyle0
+                        }
+                        children={
+                            <BasicButton
+                                onPress={() => {
+                                    navigation.setParams({scanMode: true});
+                                    setScanMode(true);
+                                }}
+                                title='Scan ticket'/>}
+                        setItem={setItem}
+                    />
+                </TouchableWithoutFeedback>
+                <BasicButton title='Add event' customStyles={customButtonStyle} onPress={handleAddEvent}/>
             </KeyboardAvoidingView>
             {error && <Snackbar message={error}/>}
         </Screen>
@@ -164,13 +163,7 @@ export default function AddTicketScreen({navigation}) {
 
 const customButtonStyle = {
     button: {
-        // position: 'absolute',
-        // bottom: 15,
-        marginTop: 50,
-        // flex:1,
-        // justifySelf: 'flex-start',
-        // justifyContent: 'flex-end',
-        backgroundColor: '#4D0EFF'
+        backgroundColor: '#4D0EFF',
     },
     text: {
         color: '#fff'
@@ -179,14 +172,36 @@ const customButtonStyle = {
 }
 
 
+const eventDetailsStyle0 = {
+    container: {
+        width: '90%',
+        alignSelf: 'center',
+        justifyContent: 'center',
+        padding: 20,
+        ...shadow,
+        shadowOffset: {height: 10},
+        elevation: 4,
+
+        position: 'absolute',
+        bottom: 10,
+        // marginBottom:50
+    },
+    title: {
+        paddingTop: 10,
+        paddingBottom: 5
+    },
+    location: {
+        paddingBottom: 1
+    }
+}
+
 const eventDetailsStyle = {
     container: {
         width: '90%',
         alignSelf: 'center',
         justifyContent: 'center',
-        // position: 'absolute',
-        // bottom: 150,
         marginTop: screenHeight * 0.15,
+        marginBottom: 10,
         padding: 20,
         ...shadow,
         shadowOffset: {height: 10},

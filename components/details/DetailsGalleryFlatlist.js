@@ -129,7 +129,7 @@ const eventDetailsStyle = {
 
 const styles = StyleSheet.create({
     image: {
-        height: screenHeight * 0.65,
+        height: screenHeight * 0.75,
     },
     imageGridContainer: {
         display: 'flex',
