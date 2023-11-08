@@ -25,7 +25,7 @@ function createTable(db) {
 }
 
 
-export function insertEvents() {
+export function insertEvents(db) {
     db.transaction(tx => {
         pastEventsData.forEach(event => {
             tx.executeSql(
@@ -155,7 +155,7 @@ async function fetchEvents(db) {
 }
 
 
-async function deleteDatabase() {
+async function deleteDatabase(db) {
 
     try {
         await db.closeAsync();
@@ -172,9 +172,9 @@ export function useEvents() {
     const db = SQLite.openDatabase('concerts_db');
 
     const fetch = async () => {
-        // deleteDatabase();
+        // deleteDatabase(db);
         createTable(db)
-        // insertEvents();
+        // insertEvents(db);
         const fetchedEvents = await fetchEvents(db);
         setEvents(fetchedEvents)
     }
